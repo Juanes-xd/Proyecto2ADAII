@@ -1,6 +1,7 @@
 % =========================================================
 % MinPol - Modelo genérico de minimización de polarización
 % Análisis de Algoritmos II - Univalle
+% Versión 2: función objetivo 100% lineal (sin productos de variables)
 % =========================================================
 
 % ---------- Parámetros de entrada ----------
@@ -13,9 +14,13 @@ array[1..m] of float: ce;                % costo extra por llegar a una opinión
 float: ct;                               % costo total máximo permitido
 int: MaxMovs;                            % máximo de movimientos ponderados por distancia de índices
 
-% ---------- Constante derivada: ¿la opinión j estaba vacía? ----------
-% No depende de ninguna decisión del modelo, se calcula directo del dato de entrada.
+% ---------- Constantes derivadas ----------
+% ¿La opinión j estaba vacía? No depende de ninguna decisión del modelo.
 array[1..m] of int: I = [ if p[j] = 0 then 1 else 0 endif | j in 1..m ];
+
+% Matriz de distancias ideológicas entre cada opinión i y cada posible mediana k.
+% Es constante: se calcula directo de los parámetros de entrada, antes de resolver.
+array[1..m, 1..m] of float: D = array2d(1..m, 1..m, [ abs(v[i]-v[k]) | i in 1..m, k in 1..m ]);
 
 % Big-M para la linealización de la mediana (2n es suficiente y numéricamente seguro)
 int: BIGM = 2 * n;
@@ -24,15 +29,15 @@ int: BIGM = 2 * n;
 array[1..m, 1..m] of var 0..n: x;        % personas movidas de i a j (x[i,i] se fuerza a 0)
 array[1..m] of var 0..n: pprime;         % población final por opinión
 
-% ---------- Variables auxiliares: mediana ----------
+% ---------- Variables auxiliares: identificación de la mediana (discreta) ----------
 array[1..m] of var 0..n: S;              % población acumulada hasta la opinión k
 array[1..m] of var bool: e;              % indicador: ¿la acumulada ya alcanzó el 50%?
 array[1..m] of var bool: d;              % indicador de transición (marca el índice de la mediana)
-var float: mediana;
 
-% ---------- Variables auxiliares: valor absoluto ----------
-array[1..m] of var 0.0..1.0: deltaplus;
-array[1..m] of var 0.0..1.0: deltaminus;
+% ---------- Variable auxiliar: linealización exacta de pprime[i] * d[k] ----------
+% w[i,k] = pprime[i] si k es la opinión mediana (d[k]=1), y 0 en caso contrario.
+% Es una linealización EXACTA (no una relajación) porque d[k] es binaria.
+array[1..m, 1..m] of var 0..n: w;
 
 % =========================================================
 % Restricciones
@@ -66,7 +71,7 @@ constraint
     ) <= ct;
 
 % =========================================================
-% Linealización de la mediana ponderada
+% Identificación de la mediana (discreta, sin variables continuas)
 % =========================================================
 
 constraint forall(k in 1..m)( S[k] = sum(i in 1..k)( pprime[i] ) );
@@ -89,22 +94,21 @@ constraint forall(k in 2..m)( d[k] = (e[k] /\ not(e[k-1])) );
 % Exactamente una opinión es la mediana
 constraint sum(k in 1..m)( bool2int(d[k]) ) = 1;
 
-% Mediana como combinación lineal (válida porque v[k] son constantes)
-constraint mediana = sum(k in 1..m)( bool2int(d[k]) * v[k] );
-
 % =========================================================
-% Linealización del valor absoluto
+% Linealización EXACTA de w[i,k] = pprime[i] * d[k]
+% (McCormick es exacta aquí porque d[k] es binaria, no una relajación)
 % =========================================================
 
-constraint forall(i in 1..m)(
-    v[i] - mediana = deltaplus[i] - deltaminus[i]
-);
+constraint forall(i in 1..m, k in 1..m)( w[i,k] <= n * bool2int(d[k]) );
+constraint forall(i in 1..m, k in 1..m)( w[i,k] <= pprime[i] );
+constraint forall(i in 1..m, k in 1..m)( w[i,k] >= pprime[i] - n * (1 - bool2int(d[k])) );
+constraint forall(i in 1..m, k in 1..m)( w[i,k] >= 0 );
 
 % =========================================================
-% Función objetivo
+% Función objetivo (100% lineal: D[i,k] es constante, w[i,k] es la única variable)
 % =========================================================
 
-var float: polarizacion = sum(i in 1..m)( int2float(pprime[i]) * (deltaplus[i] + deltaminus[i]) );
+var float: polarizacion = sum(i in 1..m, k in 1..m)( D[i,k] * int2float(w[i,k]) );
 
 solve minimize polarizacion;
 
@@ -115,6 +119,6 @@ solve minimize polarizacion;
 output [
   "x = ", show(x), "\n",
   "poblacion_final = ", show(pprime), "\n",
-  "mediana = ", show(mediana), "\n",
+  "mediana_indice = ", show(d), "\n",
   "polarizacion = ", show(polarizacion), "\n"
 ];
