@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Salidas generadas por ejecuciones de MiniZinc
+salidas*/
+salidas_bateria*/
+
+# Graficos generados automaticamente
+graficos*/
+
+misDatos/*

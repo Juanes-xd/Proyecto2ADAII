@@ -119,6 +119,7 @@ solve minimize polarizacion;
 output [
   "x = ", show(x), "\n",
   "poblacion_final = ", show(pprime), "\n",
+  "mediana = ", show(sum(k in 1..m)(bool2int(d[k]) * v[k])), "\n",
   "mediana_indice = ", show(d), "\n",
   "polarizacion = ", show(polarizacion), "\n"
 ];

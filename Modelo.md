@@ -67,14 +67,41 @@ $$d_k = e_k - e_{k-1} \qquad (e_0 := 0), \qquad d_k \in \{0,1\}$$
 **Mediana como expresión lineal** (válida porque $v_k$ son constantes conocidas):
 $$mediana(p', v) = \sum_{k=1}^{m} d_k \cdot v_k$$
 
-## 6. Linealización del valor absoluto
+## 6. Linealización de la polarización
 
-Para cada opinión $i$, se introducen variables auxiliares no negativas $\delta_i^+, \delta_i^- \geq 0$:
+La polarización que se desea minimizar es:
 
-$$v_i - mediana(p', v) = \delta_i^+ - \delta_i^- \qquad \forall i$$
+$$\sum_{i=1}^{m} p'_i \cdot |v_i - mediana(p',v)|$$
 
-Como el objetivo minimiza $\delta_i^+ + \delta_i^-$, en el óptimo una de las dos siempre vale cero, garantizando:
-$$|v_i - mediana(p', v)| = \delta_i^+ + \delta_i^-$$
+Como la mediana se selecciona entre los valores discretos $v_k$, usando las variables binarias $d_k$, se define primero una matriz constante de distancias ideológicas:
+
+$$D_{i,k} = |v_i - v_k| \qquad \forall i,k \in \{1,\dots,m\}$$
+
+Esta matriz no contiene variables de decisión, porque los valores $v_i$ y $v_k$ son parámetros de entrada.
+
+Para evitar el producto directo entre $p'_i$ y $d_k$, se introduce la variable auxiliar:
+
+$$w_{i,k} \in \mathbb{Z}_{\geq 0} \qquad \forall i,k \in \{1,\dots,m\}$$
+
+donde:
+
+$$w_{i,k} =
+\begin{cases}
+p'_i & \text{si la mediana es la opinión } k \; (d_k = 1)\\
+0 & \text{si la mediana no es la opinión } k \; (d_k = 0)
+\end{cases}$$
+
+Esta relación se modela linealmente mediante:
+
+$$w_{i,k} \leq p'_i \qquad \forall i,k$$
+
+$$w_{i,k} \leq n d_k \qquad \forall i,k$$
+
+$$w_{i,k} \geq p'_i - n(1-d_k) \qquad \forall i,k$$
+
+$$w_{i,k} \geq 0 \qquad \forall i,k$$
+
+Estas restricciones son exactas porque $d_k$ es binaria y $0 \leq p'_i \leq n$.
 
 ## 7. Manejo del costo extra condicional
 
@@ -86,9 +113,19 @@ se calcula **antes** de resolver el modelo, como constante, y se incorpora direc
 
 ## 8. Función objetivo
 
-$$\min \; \sum_{i=1}^{m} p'_i \left( \delta_i^+ + \delta_i^- \right)$$
+Con la linealización anterior, la función objetivo queda:
 
-sujeto a las restricciones (R1)–(R5), las restricciones de linealización de la mediana (sección 5) y del valor absoluto (sección 6), con $x_{i,j} \in \mathbb{Z}_{\geq 0}$, $p'_i \in \mathbb{Z}_{\geq 0}$, $e_k, d_k \in \{0,1\}$, $\delta_i^+, \delta_i^- \geq 0$.
+$$\min \; \sum_{i=1}^{m} \sum_{k=1}^{m} D_{i,k} \cdot w_{i,k}$$
+
+Esta expresión es equivalente a minimizar:
+
+$$\sum_{i=1}^{m} p'_i \cdot |v_i - mediana(p',v)|$$
+
+pero evita productos entre variables de decisión. Por lo tanto, el modelo queda formulado como un problema de programación entera mixta lineal.
+
+El modelo completo queda sujeto a las restricciones (R1)–(R5), las restricciones de identificación de la mediana (sección 5) y las restricciones de linealización de la polarización (sección 6), con:
+
+$$x_{i,j} \in \mathbb{Z}_{\geq 0}, \quad p'_i \in \mathbb{Z}_{\geq 0}, \quad e_k,d_k \in \{0,1\}, \quad w_{i,k} \in \mathbb{Z}_{\geq 0}$$
 
 ---
 
