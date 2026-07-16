@@ -2,19 +2,11 @@
 
 ## 1. Objetivo de las pruebas
 
-El objetivo de esta seccion es evaluar el comportamiento del modelo MiniZinc para el problema MinPol usando tres grupos de datos:
+El objetivo de las pruebas fue evaluar el modelo MiniZinc del problema MinPol usando la instancia base del enunciado, cinco instancias propias y la bateria de pruebas entregada por el profesor. Para cada instancia se registro la polarizacion final, el costo usado, los movimientos usados, la cantidad de personas movidas, el tiempo de ejecucion y el estado reportado por el solver.
 
-- La instancia base del enunciado.
-- Cinco instancias propias generadas por el grupo.
-- La bateria de pruebas entregada por el profesor.
-
-Las pruebas buscan verificar que el modelo encuentra soluciones optimas, que respeta las restricciones de costo y movimientos, y que los valores de polarizacion coinciden con las soluciones esperadas cuando estas estan disponibles.
-
-Las ejecuciones se realizaron con el modelo `Minizinc.mzn`, usando archivos `.dzn`. Para las instancias de la bateria del profesor, los archivos originales `.mpl` fueron convertidos previamente a `.dzn`.
+Las instancias propias permiten analizar casos disenados por el grupo. La bateria del profesor permite validar el modelo contra valores esperados externos.
 
 ## 2. Instancias evaluadas
-
-Primero se evaluaron seis instancias para analizar con detalle el comportamiento del modelo:
 
 | Instancia | Descripcion |
 |---|---|
@@ -25,7 +17,7 @@ Primero se evaluaron seis instancias para analizar con detalle el comportamiento
 | `instancia_04_extremos` | Instancia con poblacion concentrada en opiniones extremas. |
 | `instancia_05_grande` | Instancia mediana para observar uso de presupuesto y movimientos. |
 
-Adicionalmente, se evaluaron las 30 instancias de la carpeta `BateriaDePruebas`.
+Tambien se evaluaron las 30 instancias de `BateriaDePruebas`. Los archivos originales estaban en formato `.mpl` y se convirtieron a `.dzn` para ejecutarlos con MiniZinc.
 
 ## 3. Resultados de la instancia base y las instancias propias
 
@@ -38,48 +30,25 @@ Adicionalmente, se evaluaron las 30 instancias de la carpeta `BateriaDePruebas`.
 | instancia_04_extremos | 40 | 5 | 28.0 | 30 | 13.75 | 27.55 | 19 | 19 | 98.39% | 63.33% | 0.15 | optimo |
 | instancia_05_grande | 28 | 5 | 30.0 | 24 | 4.00 | 29.79 | 21 | 18 | 99.29% | 87.50% | 0.12 | optimo |
 
-**Grafica sugerida para insertar despues de esta tabla:**  
-`Resultados/graficos/01_polarizacion_instancias_propias.png`
+**Figura 1. Polarizacion final obtenida en la instancia base y las cinco instancias propias.**  
+Archivo sugerido: `Resultados/graficos/01_polarizacion_instancias_propias.png`
 
-Esta grafica permite comparar la polarizacion final de cada instancia. Se observa que `instancia_01_facil` alcanza polarizacion `0`, porque el presupuesto y los movimientos disponibles permiten llegar a una configuracion de consenso. En cambio, `instancia_04_extremos` conserva la mayor polarizacion, porque la poblacion inicia muy separada entre extremos y no es posible eliminar completamente esa distancia sin violar las restricciones. Por lo tanto, la polarizacion final depende no solo del tamano de la instancia, sino tambien de la distribucion inicial y de los recursos disponibles.
+La menor polarizacion fue `0.00` en `instancia_01_facil`. En esa instancia se movieron 9 personas y se uso el 74.54 % del presupuesto, suficiente para concentrar la poblacion final en una sola opinion. La mayor polarizacion fue `13.75` en `instancia_04_extremos`, donde la poblacion inicial estaba distribuida entre opiniones extremas. Aunque se movieron 19 personas y se uso el 98.39 % del presupuesto, la solucion no pudo eliminar totalmente la distancia ideologica inicial.
 
-## 4. Uso del presupuesto
+## 4. Uso de recursos y comportamiento de las soluciones
 
-**Grafica sugerida para insertar en esta seccion:**  
-`Resultados/graficos/02_porcentaje_presupuesto_usado.png`
+**Figura 2. Porcentaje de presupuesto y porcentaje de movimientos utilizados por instancia.**  
+Archivo sugerido: `Resultados/graficos/02_recursos_presupuesto_movimientos.png`
 
-El porcentaje de presupuesto usado permite comparar instancias con valores de `ct` diferentes. Se observa que varias instancias usan casi todo el presupuesto disponible: la instancia base usa `96%`, la instancia 2 usa `100%`, la instancia 3 usa `96.30%`, la instancia 4 usa `98.39%` y la instancia 5 usa `99.29%`.
+En cinco de las seis instancias propias se utilizo mas del 95 % del presupuesto: `base_enunciado`, `instancia_02_presupuesto_bajo`, `instancia_03_opiniones_vacias`, `instancia_04_extremos` e `instancia_05_grande`. La unica excepcion fue `instancia_01_facil`, que alcanzo polarizacion `0.00` usando solo el 74.54 % del presupuesto.
 
-Esto ocurre porque el modelo intenta aprovechar el presupuesto para mover personas hacia configuraciones menos polarizadas. Por lo tanto, el costo total permitido es una restriccion importante en la mayoria de las pruebas. En particular, cuando el presupuesto se consume casi por completo, es razonable pensar que aumentar `ct` podria permitir soluciones con menor polarizacion.
+La comparacion entre presupuesto y movimientos muestra que las dos restricciones no actuan igual. En `instancia_02_presupuesto_bajo` se consumio el 100 % del costo permitido, pero solo el 42.86 % de los movimientos. En ese caso, el presupuesto fue la restriccion dominante. En `instancia_05_grande`, en cambio, se uso el 99.29 % del presupuesto y el 87.50 % de los movimientos, por lo que ambas restricciones quedaron bastante ajustadas.
 
-## 5. Uso del limite de movimientos
+La cantidad de personas movidas tambien cambia bastante entre instancias. `instancia_03_opiniones_vacias` movio solo 3 personas y obtuvo polarizacion `6.00`; `instancia_04_extremos` movio 19 personas y aun asi obtuvo polarizacion `13.75`. Esto muestra que mover mas personas no garantiza una polarizacion menor: importa el costo, la distancia entre opiniones y la posicion final de esas personas respecto a la mediana.
 
-**Grafica sugerida para insertar en esta seccion:**  
-`Resultados/graficos/03_porcentaje_movimientos_usados.png`
+## 5. Validacion con la bateria del profesor
 
-El porcentaje de movimientos usados permite revisar si `MaxMovs` fue una restriccion activa. Se observa que no todas las instancias usan el limite de movimientos en la misma proporcion. Por ejemplo, `instancia_02_presupuesto_bajo` usa solo `42.86%` de los movimientos permitidos, aunque consume el `100%` del presupuesto. En cambio, `instancia_05_grande` usa `87.50%` de los movimientos disponibles.
-
-Esto ocurre porque costo y movimientos restringen aspectos distintos de la solucion. Un movimiento puede ser barato pero consumir mucha distancia, o puede ser cercano pero costoso. Por lo tanto, en algunas instancias limita mas el presupuesto, mientras que en otras tambien pesa bastante el limite `MaxMovs`.
-
-## 6. Personas movidas
-
-**Grafica sugerida para insertar en esta seccion:**  
-`Resultados/graficos/04_personas_movidas.png`
-
-Esta grafica muestra cuantas personas cambiaron de opinion en cada instancia. Se observa que `instancia_04_extremos` e `instancia_05_grande` mueven 19 y 18 personas respectivamente, mientras que `instancia_03_opiniones_vacias` mueve solo 3.
-
-Esto ocurre porque el modelo no busca mover muchas personas por si mismo, sino mover las personas que permiten reducir la polarizacion respetando costos y movimientos. Por lo tanto, una solucion con mas personas movidas no necesariamente es mejor; lo importante es si esos movimientos acercan la distribucion final a una configuracion menos polarizada.
-
-## 7. Tiempo de ejecucion
-
-**Grafica sugerida para insertar en esta seccion:**  
-`Resultados/graficos/05_tiempo_instancias_propias.png`
-
-Los tiempos de ejecucion de las instancias propias son bajos. Se observa que todas las instancias propias se resuelven en menos de un segundo. Esto ocurre porque el modelo actual se esta ejecutando con un solver MIP adecuado para la formulacion lineal. Por lo tanto, para las instancias propias el modelo es practico y permite obtener soluciones optimas rapidamente.
-
-## 8. Bateria de pruebas del profesor
-
-La bateria del profesor contiene 30 instancias. El archivo `Bateria_Pruebas_Solucion.csv` contiene el valor esperado de la funcion objetivo para cada una. Al ejecutar la bateria con el modelo actual se obtuvo:
+La bateria contiene 30 instancias. Al ejecutarlas con el modelo actual se obtuvo:
 
 | Resultado | Cantidad |
 |---|---:|
@@ -87,69 +56,65 @@ La bateria del profesor contiene 30 instancias. El archivo `Bateria_Pruebas_Solu
 | Infactible | 2 |
 | Total | 30 |
 
-De las 28 instancias que llegaron a estado `optimo`, las 28 coincidieron con el valor esperado del profesor usando una tolerancia de `0.01`.
+Las 28 instancias que llegaron a estado `optimo` coincidieron con el valor esperado del archivo `Bateria_Pruebas_Solucion.csv`, usando tolerancia de `0.01`.
 
-Las instancias `MinPol28` y `MinPol29` fueron reportadas como infactibles. Al revisar sus datos se encontro que ambas declaran `n = 100`, pero la distribucion inicial suma `125`. Por esta razon no se consideran fallos del modelo, sino inconsistencias en los datos de entrada.
+Las instancias `MinPol28` y `MinPol29` fueron reportadas como infactibles. En ambos casos se encontro la misma inconsistencia: declaran `n = 100`, pero la distribucion inicial suma `125`. Por esa razon no se consideran errores del modelo.
 
-**Grafica sugerida para insertar en esta seccion:**  
-`Resultados/graficos/06_estado_solver_bateria.png`
+**Figura 3. Estado de las instancias de la bateria del profesor.**  
+Archivo sugerido: `Resultados/graficos/03_estado_solver_bateria.png`
 
-Se observa que casi toda la bateria se resuelve de forma optima y solo dos casos aparecen como infactibles. Esto ocurre porque la mayoria de archivos tienen datos consistentes, mientras que `MinPol28` y `MinPol29` violan la condicion basica de que la suma de la poblacion inicial debe ser igual a `n`. Por lo tanto, el comportamiento del solver es coherente con la informacion de entrada.
+La grafica de estados permite ver que el modelo resolvio todas las instancias consistentes de la bateria. Las dos instancias no resueltas corresponden a entradas inconsistentes, no a falta de capacidad del solver para optimizar el modelo.
 
-## 9. Comparacion contra las soluciones esperadas
+## 6. Comparacion contra las soluciones esperadas
 
-**Grafica sugerida para insertar en esta seccion:**  
-`Resultados/graficos/07_valor_obtenido_vs_esperado.png`
+**Figura 4. Valor obtenido por el modelo frente al valor esperado en la bateria del profesor.**  
+Archivo sugerido: `Resultados/graficos/04_valor_obtenido_vs_esperado.png`
 
-Esta grafica compara el valor de polarizacion obtenido por el modelo contra el valor esperado de la bateria del profesor. Se observa que las curvas coinciden en las instancias comparables. Esto ocurre porque el modelo reproduce los valores optimos entregados como referencia. Por lo tanto, la bateria del profesor valida que la implementacion respeta la funcion objetivo y las restricciones principales del problema.
+En las 28 instancias comparables, el valor obtenido coincide con el valor esperado. En la mayoria de los casos la diferencia absoluta fue `0.000`; en algunos casos aparece una diferencia de `0.001`, atribuible al redondeo de valores decimales. Por ejemplo, `MinPol10` tiene valor esperado `9.686` y el modelo reporta aproximadamente `9.687`, diferencia que queda dentro de la tolerancia definida.
 
-**Grafica complementaria sugerida:**  
-`Resultados/graficos/08_diferencia_absoluta_esperado.png`
+Como todas las diferencias relevantes son nulas o de redondeo, la grafica de diferencia absoluta no es indispensable como figura principal. Puede reemplazarse por una tabla breve si se desea documentar la tolerancia:
 
-La diferencia absoluta contra el valor esperado es cero o practicamente cero en las instancias comparables. Esto ocurre porque las pequenas diferencias que pueden aparecer se deben al redondeo decimal de valores flotantes. Por lo tanto, no hay evidencia de desviaciones relevantes entre el modelo y las soluciones esperadas.
+| Criterio | Resultado |
+|---|---:|
+| Instancias comparables | 28 |
+| Coincidencias dentro de tolerancia 0.01 | 28 |
+| Diferencia maxima observada | 0.001 |
 
-## 10. Tamano del problema y tiempo de ejecucion
+## 7. Tamano de la instancia y tiempo de ejecucion
 
-**Grafica sugerida para insertar en esta seccion:**  
-`Resultados/graficos/09_tamano_vs_tiempo_bateria.png`
+**Figura 5. Tamano de la instancia frente al tiempo de ejecucion.**  
+Archivo sugerido: `Resultados/graficos/05_tamano_vs_tiempo_bateria.png`
 
-Esta grafica relaciona `m^2` con el tiempo de ejecucion. Se usa `m^2` porque la variable principal `x[i,j]` representa movimientos entre pares de opiniones, y por tanto crece aproximadamente con el cuadrado del numero de opiniones.
+Para representar el tamano estructural del modelo se uso $m^2$, porque la variable principal $x_{i,j}$ considera movimientos entre pares de opiniones. A mayor cantidad de opiniones, el numero de posibles movimientos crece de forma cuadratica.
 
-Se observa que el tiempo no aumenta de forma perfectamente lineal con `m^2`. Esto ocurre porque el tiempo tambien depende de los costos, el presupuesto, la distribucion inicial y el limite de movimientos. Por lo tanto, el tamano estructural del modelo ayuda a explicar la dificultad, pero no es el unico factor que determina el rendimiento.
+La grafica muestra que el tiempo no depende unicamente de $m^2$. Algunas instancias con mas opiniones se resuelven rapidamente, mientras que otras de tamano similar pueden tardar mas. Esto se debe a que tambien influyen el presupuesto, el limite de movimientos, la distribucion inicial y los costos de traslado. Por eso, para analizar rendimiento no basta con mirar el tamano; tambien hay que revisar la estructura de los datos.
 
-**Grafica complementaria sugerida:**  
-`Resultados/graficos/10_top10_tiempos_bateria.png`
+## 8. Analisis general
 
-Esta grafica permite identificar las instancias de la bateria que mas tardaron. Se observa que solo algunas concentran los mayores tiempos de ejecucion. Esto ocurre porque ciertas combinaciones de restricciones generan una busqueda mas exigente para demostrar optimalidad. Por lo tanto, para analizar rendimiento conviene revisar casos puntuales y no solo promedios generales.
+El modelo resolvio como optimas la instancia base y las cinco instancias propias. En la bateria del profesor resolvio 28 instancias consistentes y en todas coincidio con el valor esperado. Esto valida que la formulacion usada en MiniZinc reproduce correctamente la funcion objetivo y las restricciones del problema.
 
-## 11. Analisis general
+El presupuesto fue una restriccion fuerte en la mayoria de las instancias propias: cinco de seis usaron mas del 95 % del costo permitido. La instancia mas clara es `instancia_02_presupuesto_bajo`, que uso el 100 % del presupuesto pero solo el 42.86 % de los movimientos. En esa prueba, aumentar `MaxMovs` no necesariamente mejoraria la solucion si el presupuesto se mantiene igual.
 
-En las pruebas se observa que el modelo responde de forma coherente a las restricciones del problema. Cuando el presupuesto y los movimientos disponibles permiten concentrar la poblacion, el modelo puede llegar a polarizacion `0`, como ocurre en `instancia_01_facil`. Cuando las restricciones son mas fuertes o la poblacion inicia mas separada, la polarizacion final es mayor.
+El limite de movimientos fue mas relevante en `instancia_05_grande`, donde se uso el 87.50 % de `MaxMovs`. En esa instancia tambien se uso el 99.29 % del presupuesto, por lo que ambas restricciones limitaron la solucion.
 
-Tambien se observa que el presupuesto suele ser una restriccion muy activa. En varias instancias propias el porcentaje de presupuesto usado supera el `95%`. Esto ocurre porque el modelo utiliza el costo disponible para reducir la polarizacion tanto como sea posible. Por lo tanto, el valor de `ct` tiene un impacto directo sobre la calidad de la solucion.
+Las pruebas tambien muestran que una mayor intervencion no siempre implica menor polarizacion. `instancia_04_extremos` movio 19 personas, pero quedo con polarizacion `13.75`. En cambio, la instancia base movio 8 personas y alcanzo polarizacion `0.50`. La diferencia se explica por la distribucion inicial y por la distancia ideologica de las opiniones involucradas.
 
-El limite de movimientos tambien influye, aunque no siempre es la restriccion dominante. En algunos casos queda margen de movimientos, pero el presupuesto se agota primero. Por lo tanto, para interpretar una solucion no basta con mirar la polarizacion final; tambien es necesario revisar costo usado, movimientos usados y cantidad de personas movidas.
-
-La bateria del profesor refuerza la validez del modelo: 28 instancias consistentes fueron resueltas hasta optimalidad y todas coincidieron con los valores esperados. Por lo tanto, los resultados no dependen solo de las instancias creadas por el grupo, sino que tambien se sostienen frente a pruebas externas.
-
-## 12. Conclusiones preliminares
+## 9. Conclusiones preliminares
 
 - El modelo encuentra soluciones optimas para la instancia base y las cinco instancias propias.
 - En la bateria del profesor, las 28 instancias consistentes coinciden con el valor esperado.
-- `MinPol28` y `MinPol29` son infactibles porque sus datos no cumplen que la suma de `p` sea igual a `n`.
-- El presupuesto disponible suele ser una restriccion clave para reducir la polarizacion.
-- El limite de movimientos tambien afecta la solucion, pero no siempre es la restriccion mas fuerte.
-- Mover mas personas no garantiza automaticamente menor polarizacion; importa hacia donde se mueven y cuanto cuesta.
-- El tiempo de ejecucion depende del tamano del problema y de la estructura de cada instancia.
+- `MinPol28` y `MinPol29` son infactibles porque sus datos no cumplen que la suma de $p_i$ sea igual a $n$.
+- En cinco de las seis instancias propias se uso mas del 95 % del presupuesto, por lo que el costo total fue una restriccion dominante.
+- El limite de movimientos fue especialmente relevante en `instancia_05_grande`, donde se uso el 87.50 % de `MaxMovs`.
+- La cantidad de personas movidas debe interpretarse junto con la polarizacion final: mover mas personas no garantiza una mejor solucion.
+- El tiempo de ejecucion depende del tamano del modelo, pero tambien de la estructura de costos, poblacion inicial y restricciones.
 
-## 13. Archivos generados
+## 10. Archivos generados
 
-Los datos y resultados de estas pruebas se encuentran en:
-
-- `MisInstancias/`: contiene las cinco instancias propias en formato `.mpl`.
-- `MisInstancias/dzn/`: contiene las cinco instancias propias convertidas a formato `.dzn` para MiniZinc.
-- `BateriaDePruebas/dzn/`: contiene la bateria del profesor convertida a formato `.dzn`.
+- `MisInstancias/`: cinco instancias propias en formato `.mpl`.
+- `MisInstancias/dzn/`: cinco instancias propias convertidas a `.dzn`.
+- `BateriaDePruebas/dzn/`: bateria del profesor convertida a `.dzn`.
 - `Resultados/resultados_pruebas.csv`: resultados de la instancia base y las instancias propias.
-- `Resultados/resultados_bateria_pruebas.csv`: resultados de la bateria del profesor y comparacion contra el CSV de soluciones.
+- `Resultados/resultados_bateria_pruebas.csv`: resultados de la bateria del profesor y comparacion contra soluciones esperadas.
 - `Resultados/analisis_pruebas.ipynb`: notebook usado para construir tablas y graficas.
 - `Resultados/graficos/`: graficas generadas desde el notebook.
