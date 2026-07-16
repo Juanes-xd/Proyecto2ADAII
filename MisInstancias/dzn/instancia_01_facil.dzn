@@ -1,0 +1,19 @@
+% Instancia 01: pequena y facil, presupuesto suficiente para acercarse al consenso.
+n = 12;
+m = 4;
+
+p = [7, 3, 2, 0];
+
+v = [0.0, 0.33, 0.66, 1.0];
+
+ce = [1.0, 1.0, 1.0, 2.0];
+
+c = array2d(1..4, 1..4, [
+  0.0, 1.0, 3.0, 5.0,
+  1.0, 0.0, 2.0, 4.0,
+  3.0, 1.0, 0.0, 2.0,
+  5.0, 3.0, 1.0, 0.0
+]);
+
+ct = 18.0;
+MaxMovs = 15;
