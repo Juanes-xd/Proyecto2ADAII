@@ -19,13 +19,16 @@ SOLVER = os.environ.get("MINIZINC_SOLVER", "highs")
 RESULTS_DIR = ROOT / "Resultados"
 OWN_OUT_DIR = RESULTS_DIR / "salidas"
 BATTERY_OUT_DIR = RESULTS_DIR / "salidas_bateria"
+BNB_OUT_DIR = RESULTS_DIR / "salidas_branch_and_bound"
 OWN_CSV = RESULTS_DIR / "resultados_pruebas.csv"
 BATTERY_CSV = RESULTS_DIR / "resultados_bateria_pruebas.csv"
+BNB_CSV = RESULTS_DIR / "branch_and_bound_instancias_propias.csv"
 EXPECTED_CSV = RESULTS_DIR / "Bateria_Pruebas_Solucion.csv"
 NOTEBOOK_PATH = RESULTS_DIR / "analisis_pruebas.ipynb"
 GRAFICOS_DIR = RESULTS_DIR / "graficos"
 OWN_TIMEOUT_SECONDS = 20
 BATTERY_TIMEOUT_SECONDS = 120
+BNB_TIMEOUT_SECONDS = 60
 TOLERANCE = 1e-2
 
 OWN_INSTANCES = [
@@ -36,6 +39,8 @@ OWN_INSTANCES = [
     ("instancia_04_extremos", ROOT / "MisInstancias" / "dzn" / "instancia_04_extremos.dzn"),
     ("instancia_05_grande", ROOT / "MisInstancias" / "dzn" / "instancia_05_grande.dzn"),
 ]
+
+OWN_CREATED_INSTANCES = OWN_INSTANCES[1:]
 
 
 def strip_comments(text: str) -> str:
@@ -196,6 +201,162 @@ def run_minizinc(instance_path: Path, out_path: Path, timeout_seconds: int):
     if "----------" in completed.stdout:
         return "factible/no_confirmado", elapsed, full_output
     return "sin_solucion_parseable", elapsed, full_output
+
+
+def parse_minizinc_statistics(output: str):
+    stats = {}
+    for line in output.splitlines():
+        line = line.strip()
+        if not line.startswith("%%%mzn-stat:"):
+            continue
+        payload = line.split(":", 1)[1].strip()
+        if "=" not in payload:
+            continue
+        key, value = payload.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"')
+        try:
+            if re.fullmatch(r"-?\d+", value):
+                stats[key] = int(value)
+            else:
+                stats[key] = float(value)
+        except ValueError:
+            stats[key] = value
+    return stats
+
+
+def run_branch_and_bound_statistics(instance_path: Path, out_path: Path, timeout_seconds: int):
+    start = time.perf_counter()
+    try:
+        completed = subprocess.run(
+            [
+                str(MINIZINC),
+                "--solver",
+                "Gecode",
+                "--statistics",
+                "--time-limit",
+                str(timeout_seconds * 1000),
+                str(MODEL),
+                str(instance_path),
+            ],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds + 3,
+        )
+    except subprocess.TimeoutExpired as exc:
+        elapsed = time.perf_counter() - start
+        partial_output = (exc.stdout or "") + (exc.stderr or "")
+        out_path.write_text(partial_output + f"\nTIMEOUT: mas de {timeout_seconds} segundos.\n")
+        return "timeout", elapsed, partial_output
+
+    elapsed = time.perf_counter() - start
+    full_output = completed.stdout + completed.stderr
+    out_path.write_text(full_output)
+
+    if "=====UNSATISFIABLE=====" in full_output:
+        return "infeasible", elapsed, full_output
+    if completed.returncode != 0:
+        return "error", elapsed, full_output
+    if "==========" in completed.stdout:
+        return "optimo", elapsed, full_output
+    if "----------" in completed.stdout:
+        return "factible/no_confirmado", elapsed, full_output
+    return "sin_solucion_parseable", elapsed, full_output
+
+
+def branch_and_bound_rows(instances, out_dir: Path, timeout_seconds: int):
+    out_dir.mkdir(parents=True, exist_ok=True)
+    rows = []
+    for name, instance_path in instances:
+        print(f"Ejecutando estadisticas B&B para {name}...", flush=True)
+        try:
+            data = load_instance(instance_path, strict_population=True)
+        except Exception as exc:
+            rows.append({
+                "instancia": name,
+                "archivo": str(instance_path.relative_to(ROOT)),
+                "estado_solver": "datos_invalidos",
+                "observaciones": str(exc),
+            })
+            print(f"  datos_invalidos: {exc}", flush=True)
+            continue
+
+        out_path = out_dir / f"{name}.out"
+        status, elapsed, output = run_branch_and_bound_statistics(instance_path, out_path, timeout_seconds)
+        stats = parse_minizinc_statistics(output)
+        row = {
+            "instancia": name,
+            "archivo": str(instance_path.relative_to(ROOT)),
+            "n": data["n"],
+            "m": data["m"],
+            "tamano_m2": data["m"] ** 2,
+            "ct": data["ct"],
+            "MaxMovs": data["MaxMovs"],
+            "estado_solver": status,
+            "nodos": stats.get("nodes", ""),
+            "fallos": stats.get("failures", ""),
+            "tiempo_solver_segundos": stats.get("solveTime", ""),
+            "tiempo_total_segundos": round(elapsed, 4),
+            "soluciones": stats.get("solutions", stats.get("nSolutions", "")),
+            "variables": stats.get("variables", ""),
+            "propagadores": stats.get("propagators", ""),
+            "propagaciones": stats.get("propagations", ""),
+            "profundidad_maxima": stats.get("peakDepth", ""),
+            "reinicios": stats.get("restarts", ""),
+            "polarizacion": "",
+            "observaciones": "",
+        }
+
+        if status in {"optimo", "factible/no_confirmado"}:
+            try:
+                row["polarizacion"] = parse_minizinc_output(output)["polarizacion"]
+            except Exception as exc:
+                row["observaciones"] = str(exc)
+        elif status == "timeout":
+            row["observaciones"] = f"No termino dentro de {timeout_seconds} segundos."
+        elif status in {"error", "sin_solucion_parseable"}:
+            row["observaciones"] = output.strip().replace("\n", " ")[:300]
+        elif status == "infeasible":
+            row["observaciones"] = "MiniZinc reporto instancia infactible."
+
+        rows.append(row)
+        print(
+            f"  {status} ({elapsed:.2f}s), nodos={row['nodos'] or '-'}, fallos={row['fallos'] or '-'}",
+            flush=True,
+        )
+    return rows
+
+
+def write_branch_and_bound_csv(path: Path, rows):
+    fieldnames = [
+        "instancia",
+        "archivo",
+        "n",
+        "m",
+        "tamano_m2",
+        "ct",
+        "MaxMovs",
+        "estado_solver",
+        "nodos",
+        "fallos",
+        "tiempo_solver_segundos",
+        "tiempo_total_segundos",
+        "soluciones",
+        "variables",
+        "propagadores",
+        "propagaciones",
+        "profundidad_maxima",
+        "reinicios",
+        "polarizacion",
+        "observaciones",
+    ]
+    with path.open("w", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({field: row.get(field, "") for field in fieldnames})
 
 
 def build_base_row(name, instance_path, data, status, elapsed, output, timeout_seconds: int):
@@ -568,6 +729,7 @@ def try_create_plots(own_rows, battery_rows):
 def main():
     OWN_OUT_DIR.mkdir(parents=True, exist_ok=True)
     BATTERY_OUT_DIR.mkdir(parents=True, exist_ok=True)
+    BNB_OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     print("== Instancia base e instancias propias ==", flush=True)
     own_rows = run_group(OWN_INSTANCES, OWN_OUT_DIR, strict_population=True, timeout_seconds=OWN_TIMEOUT_SECONDS)
@@ -578,10 +740,16 @@ def main():
     battery_rows = add_expected_comparison(battery_rows)
     write_csv(BATTERY_CSV, battery_rows, extra_fields=["valor_esperado", "diferencia_abs", "comparacion_esperada"])
 
+    print("== Estadisticas Branch and Bound: instancias propias ==", flush=True)
+    bnb_rows = branch_and_bound_rows(OWN_CREATED_INSTANCES, BNB_OUT_DIR, timeout_seconds=BNB_TIMEOUT_SECONDS)
+    write_branch_and_bound_csv(BNB_CSV, bnb_rows)
+
     print(f"Resultados propios escritos en {OWN_CSV.relative_to(ROOT)}")
     print(f"Resultados bateria escritos en {BATTERY_CSV.relative_to(ROOT)}")
+    print(f"Estadisticas Branch and Bound escritas en {BNB_CSV.relative_to(ROOT)}")
     print(f"Salidas propias escritas en {OWN_OUT_DIR.relative_to(ROOT)}")
     print(f"Salidas bateria escritas en {BATTERY_OUT_DIR.relative_to(ROOT)}")
+    print(f"Salidas Branch and Bound escritas en {BNB_OUT_DIR.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":
