@@ -13,8 +13,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MINIZINC = Path("/Applications/MiniZincIDE.app/Contents/Resources/minizinc")
-MODEL = ROOT / "Minizinc.mzn"
+MINIZINC = Path(r"C:\Program Files\MiniZinc\minizinc.exe")
+MODEL = ROOT / "Minzinc2.mzn"
 SOLVER = os.environ.get("MINIZINC_SOLVER", "highs")
 RESULTS_DIR = ROOT / "Resultados"
 OWN_OUT_DIR = RESULTS_DIR / "salidas"
