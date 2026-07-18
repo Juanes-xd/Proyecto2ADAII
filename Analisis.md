@@ -46,6 +46,21 @@ $$\sum_{i=1}^{m} \sum_{j=1}^{m} \left[ c_{i,j} \cdot \left(1 + \frac{p_i}{n}\rig
 ### D. Restricción de la Mediana
 La variable continua $med$ se halla determinando el valor $v_k$ donde la población acumulada de izquierda a derecha (y viceversa) alcanza o supera de forma estricta el umbral crítico de la mitad de la población ($n/2$).
 
+### No hay movimientos hacia uno mismo
+
+
+$$x_{i,i} = 0 \qquad \forall\, i \in 1..m$$
+
+Nadie cambia de opinión i hacia la misma opinión i.
+
+
+
+### No se mueve más gente de la disponible
+
+$$\sum_{j=1,\, j \neq i}^{m} x_{i,j} \leq p_i \qquad \forall\, i \in 1..m$$
+
+La suma de personas que salen de la opinión i no puede superar la cantidad inicial con esa opinión.
+
 ---
 
 # 2. Análisis del Algoritmo Branch & Bound para el Caso de Estudio

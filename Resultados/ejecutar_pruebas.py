@@ -13,8 +13,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MINIZINC = Path("/Applications/MiniZincIDE.app/Contents/Resources/minizinc")
-MODEL = ROOT / "Minizinc.mzn"
+MINIZINC = Path(r"C:\Program Files\MiniZinc\minizinc.exe")
+MODEL = ROOT / "Minzinc2.mzn"
 SOLVER = os.environ.get("MINIZINC_SOLVER", "highs")
 RESULTS_DIR = ROOT / "Resultados"
 OWN_OUT_DIR = RESULTS_DIR / "salidas"
@@ -34,6 +34,7 @@ TOLERANCE = 1e-2
 OWN_INSTANCES = [
     ("base_enunciado", ROOT / "DatosProyecto.dzn"),
     ("instancia_01_facil", ROOT / "MisInstancias" / "dzn" / "instancia_01_facil.dzn"),
+    ("ejemplo1", ROOT / "MisInstancias" / "dzn" / "ejemplo1.dzn"),
     ("instancia_02_presupuesto_bajo", ROOT / "MisInstancias" / "dzn" / "instancia_02_presupuesto_bajo.dzn"),
     ("instancia_03_opiniones_vacias", ROOT / "MisInstancias" / "dzn" / "instancia_03_opiniones_vacias.dzn"),
     ("instancia_04_extremos", ROOT / "MisInstancias" / "dzn" / "instancia_04_extremos.dzn"),
