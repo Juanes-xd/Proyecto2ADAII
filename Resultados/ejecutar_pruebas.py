@@ -34,6 +34,7 @@ TOLERANCE = 1e-2
 OWN_INSTANCES = [
     ("base_enunciado", ROOT / "DatosProyecto.dzn"),
     ("instancia_01_facil", ROOT / "MisInstancias" / "dzn" / "instancia_01_facil.dzn"),
+    ("ejemplo1", ROOT / "MisInstancias" / "dzn" / "ejemplo1.dzn"),
     ("instancia_02_presupuesto_bajo", ROOT / "MisInstancias" / "dzn" / "instancia_02_presupuesto_bajo.dzn"),
     ("instancia_03_opiniones_vacias", ROOT / "MisInstancias" / "dzn" / "instancia_03_opiniones_vacias.dzn"),
     ("instancia_04_extremos", ROOT / "MisInstancias" / "dzn" / "instancia_04_extremos.dzn"),

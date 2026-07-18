@@ -1,6 +1,7 @@
 instancia,archivo,n,m,tamano_m2,ct,MaxMovs,estado_solver,nodos,fallos,tiempo_solver_segundos,tiempo_total_segundos,soluciones,variables,propagadores,propagaciones,profundidad_maxima,reinicios,polarizacion,observaciones
-instancia_01_facil,MisInstancias\dzn\instancia_01_facil.dzn,12,4,16,18.0,15,optimo,30,10,0.0005014,0.1414,4,59,89,1005,13,0,0.0,
-instancia_02_presupuesto_bajo,MisInstancias\dzn\instancia_02_presupuesto_bajo.dzn,24,5,25,14.0,14,optimo,461,225,0.0113787,0.1538,6,89,140,45430,19,0,7.75,
-instancia_03_opiniones_vacias,MisInstancias\dzn\instancia_03_opiniones_vacias.dzn,18,5,25,18.0,16,optimo,87,41,0.006916,0.1713,3,89,152,9588,12,0,6.0,
-instancia_04_extremos,MisInstancias\dzn\instancia_04_extremos.dzn,40,5,25,28.0,30,optimo,59758,29874,1.73144,1.9774,5,89,162,6902139,31,0,13.75,
-instancia_05_grande,MisInstancias\dzn\instancia_05_grande.dzn,28,5,25,30.0,24,optimo,16028,8005,0.493998,0.6839,8,89,157,1806038,24,0,4.0,
+instancia_01_facil,MisInstancias\dzn\instancia_01_facil.dzn,12,4,16,18.0,15,optimo,30,10,0.0009725,0.2501,4,59,89,1005,13,0,0.0,
+ejemplo1,MisInstancias\dzn\ejemplo1.dzn,3,3,9,10.0,1,optimo,5,2,0.0003601,0.2059,1,35,44,258,2,0,0.5,
+instancia_02_presupuesto_bajo,MisInstancias\dzn\instancia_02_presupuesto_bajo.dzn,24,5,25,14.0,14,optimo,461,225,0.0166531,0.2259,6,89,140,45430,19,0,7.75,
+instancia_03_opiniones_vacias,MisInstancias\dzn\instancia_03_opiniones_vacias.dzn,18,5,25,18.0,16,optimo,87,41,0.0035746,0.2254,3,89,152,9588,12,0,6.0,
+instancia_04_extremos,MisInstancias\dzn\instancia_04_extremos.dzn,40,5,25,28.0,30,optimo,59758,29874,2.74168,2.9634,5,89,162,6902139,31,0,13.75,
+instancia_05_grande,MisInstancias\dzn\instancia_05_grande.dzn,28,5,25,30.0,24,optimo,16028,8005,0.693881,0.9445,8,89,157,1806038,24,0,4.0,
