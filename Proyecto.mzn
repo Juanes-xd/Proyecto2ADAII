@@ -1,6 +1,5 @@
 % =========================================================
 % MinPol - Modelo genérico de minimización de polarización
-% Versión: No Lineal Corregida para Solvers MIP Lineales
 % =========================================================
 
 % ---------- Parámetros de entrada ----------
@@ -23,7 +22,7 @@ array[1..m, 1..m] of float: D = array2d(1..m, 1..m, [ abs(v[i]-v[k]) | i in 1..m
 array[1..m, 1..m] of var 0..n: x;        % personas movidas de i a j
 array[1..m] of var 0..n: pprime;         % población final por opinión
 
-% REEMPLAZO: En lugar de un entero med_idx, usamos un "vector interruptor" binario
+
 array[1..m] of var bool: d;              % d[k] = true si la opinión k es la mediana
 
 % =========================================================
