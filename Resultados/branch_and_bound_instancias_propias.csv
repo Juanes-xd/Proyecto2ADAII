@@ -1,0 +1,7 @@
+instancia,archivo,n,m,tamano_m2,ct,MaxMovs,estado_solver,nodos,fallos,tiempo_solver_segundos,tiempo_total_segundos,soluciones,variables,propagadores,propagaciones,profundidad_maxima,reinicios,polarizacion,observaciones
+instancia_01_facil,MisInstancias\dzn\instancia_01_facil.dzn,12,4,16,18.0,15,error,,,,0.2721,,,,,,,,Error: error: Cannot open file 'C:\Users\brs77\Desktop\Juanes\ADAII\Proyecto2\Minzinc2.mzn'.
+ejemplo1,MisInstancias\dzn\ejemplo1.dzn,3,3,9,10.0,1,error,,,,0.0578,,,,,,,,Error: error: Cannot open file 'C:\Users\brs77\Desktop\Juanes\ADAII\Proyecto2\Minzinc2.mzn'.
+instancia_02_presupuesto_bajo,MisInstancias\dzn\instancia_02_presupuesto_bajo.dzn,24,5,25,14.0,14,error,,,,0.0613,,,,,,,,Error: error: Cannot open file 'C:\Users\brs77\Desktop\Juanes\ADAII\Proyecto2\Minzinc2.mzn'.
+instancia_03_opiniones_vacias,MisInstancias\dzn\instancia_03_opiniones_vacias.dzn,18,5,25,18.0,16,error,,,,0.0593,,,,,,,,Error: error: Cannot open file 'C:\Users\brs77\Desktop\Juanes\ADAII\Proyecto2\Minzinc2.mzn'.
+instancia_04_extremos,MisInstancias\dzn\instancia_04_extremos.dzn,40,5,25,28.0,30,error,,,,0.0593,,,,,,,,Error: error: Cannot open file 'C:\Users\brs77\Desktop\Juanes\ADAII\Proyecto2\Minzinc2.mzn'.
+instancia_05_grande,MisInstancias\dzn\instancia_05_grande.dzn,28,5,25,30.0,24,error,,,,0.0605,,,,,,,,Error: error: Cannot open file 'C:\Users\brs77\Desktop\Juanes\ADAII\Proyecto2\Minzinc2.mzn'.
